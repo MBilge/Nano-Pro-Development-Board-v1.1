@@ -1,8 +1,6 @@
-  #include "Keypad_I2C.h"
+#include "Keypad_I2C.h"
 #include "LCD_I2C.h"
 #include "FR_RotaryEncoder.h"
-#include <TimerOne.h>
-//#include <ErriezRotaryFullStep.h>
 
 // I2C address for MCP23017
 // if needed it can be reconfigured at back of the board via A0,A1,A2
@@ -26,8 +24,7 @@ bool dispTitle = false;
 
 // LDR configuration
 #define LDR A7
-int Lx = 0;
-int val = 0;
+int Lx = 0;  // LDR reading
 
 // 4x4 Keypad configuration 
 const byte ROWS = 4; //four rows
@@ -49,8 +46,6 @@ int pinSW = 7; // Interrupt pin for switch. Can be 2 or 3
 
 // Definition encoder using "FR_RotaryEncoder.h" library 
 RotaryEncoder Encoder(pinSCK, pinDT, pinSW);
-int lastSwitchState = 0;
-int currentSwitchState;
 int lastPosition;
 int currentPosition=0;
 
@@ -69,60 +64,28 @@ float Rlog;
 //LCD configuration
 LCD_I2C lcd(I2CADDR);
 
-int LDRCount = 0; // number of reding for averaging
-int NTCCount = 0; // number of reding for averaging
+int LDRCount = 0; 
+int NTCCount = 0; 
 
 int menuLength = 5;// number of test
 
 void setup() {
-   
-  Serial.begin(9600);
-  Serial.println("Nano Pro Menu Test v1.0");
+  Serial.begin(9600); 
   keypad.begin( );
-  Serial.println("Keypad is initialized...");  
-  lcd.begin(16, 2); lcd.clear();
-  Serial.println("LCD is initialized...");  
-  pinMode(LDR,INPUT);
-  Serial.println("LDR is initialized...");  
-  pinMode(NTC,INPUT);   
-  Serial.println("NTC is initialized...");    
-  pinMode(Relay,OUTPUT);
-  Serial.println("Relay is initialized...");  
+  lcd.begin(16, 2); 
+  lcd.clear();  
+  pinMode(LDR,INPUT); 
+  pinMode(NTC,INPUT);      
+  pinMode(Relay,OUTPUT); 
  
-  //Encoder does not have a pullup for the switch so we must set one 
   Encoder.enableInternalSwitchPullup(); 
-  
-  // Reverses the CW - CCW direction if needed
-  Encoder.setRotaryLogic(true); 
-
-  // Sets the limits and mode
-  Encoder.setRotaryLimits(0, menuLength-1, false); 
-  
-  //Encoder.setRotationalStep(1); // if needed
-  Serial.println("Encoder is initilaized...");  
-  
+  Encoder.setRotaryLogic(true);    // Reverses the CW - CCW direction if needed
+  Encoder.setRotaryLimits(0, menuLength-1, false);   // Sets the limits and mode
+ 
   dispTitle = true;
   displayTest( 0 );
   dispTitle = false;
 }
-
-
-
-
-// using FR_RotaryEncoder
-void getEncoder()
-{
-  Encoder.update();// update both for switch and rotary
-  currentPosition = Encoder.getPosition();  // Rotary 
-  while (lastPosition != currentPosition)
-  {
-    lastPosition = currentPosition;
-    //delay(10);
-    dispTitle = true;
-  }
-  displayTest( lastPosition );
-}
-
 
 void displayTest(int c)
 {
@@ -142,7 +105,7 @@ void displayTest(int c)
               lcd.setCursor(0,1);lcd.print("LDR :           ");
               dispTitle = false;
             }
-           getLDR();
+           getLDR();  // if reading is less than 350 then the backlight of LCD will be OFF 
            break;
  
   case 2 : if (dispTitle)
@@ -157,17 +120,15 @@ void displayTest(int c)
   case 3 : if (dispTitle)
            {
               lcd.setCursor(0,0);lcd.print("Relay test ---> ");
-              lcd.setCursor(0,1);lcd.print("Relay is        ");
-                    
+              lcd.setCursor(0,1);lcd.print("Relay is        ");                   
               dispTitle = false;
            }
-           // if a test chosen (button pressed)           
+           // if encoder button pressed           
            Button = Encoder.getSwitchState();
-           if ( Button ) 
+           if ( Button  ) 
             { 
               int relayStatus = digitalRead(Relay);
               digitalWrite(Relay,!relayStatus);
-              
               lcd.setCursor(9,1);
               if (!relayStatus) lcd.print("ON ");
               else              lcd.print("OFF");
@@ -209,8 +170,6 @@ void getLDR()
   }
   LDRCount++;
 }
-
-
 
 //The Steinhart and Hart equation is an empirical expression that has been determined to be the best
 //mathematical expression for the resistance - temperature relationship of a negative temperature
@@ -259,11 +218,16 @@ void getNTC()
 
 void loop()
 {
-  //getKey();
-  getEncoder();  // when other features activated the encoder does not read properly jumpingand in reverse direction it stops
-  // getLDR();
-  //getNTC();
-
+  Encoder.update();// update both for switch and rotary
+  currentPosition = Encoder.getPosition();  // Rotary 
+  while (lastPosition != currentPosition)
+  {
+    lastPosition = currentPosition;
+    //delay(10);
+    dispTitle = true;
+  }
+  displayTest( lastPosition );
 }
 
+ 
  
