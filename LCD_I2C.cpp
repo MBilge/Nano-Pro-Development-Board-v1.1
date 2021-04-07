@@ -156,51 +156,7 @@ void LCD_I2C::begin(uint8_t cols, uint8_t rows){
   _displaymode = LCD_ENTRYLEFT | LCD_ENTRYSHIFTDECREMENT;
   // set the entry mode
   command(LCD_ENTRYMODESET | _displaymode);
-
-  //------ Keypad Setup  ----------------------
-
-
-
-
-
-  //-------Keypad Setup  ----------------------
 }
-
-// void LCD_I2C::Keypad_begin()){
-// // Construction for Keypad
-//   TwoWire::begin(_i2cAddr);
-//   pinState = pinState_set();
-//   iodir_state = 0x00FF; // set all pins on bank A as input
-//   word iodirec = 0x00ff;  //0xffff  //direction of each bit - reset state = all inputs.
-//   byte iocon =  0x10;   // reset state for bank, disable slew control
-//   TwoWire::beginTransmission( (int)_i2caddr );
-//   TwoWire::write( IOCONA ); // same as when reset
-//   TwoWire::write( iocon );
-//   TwoWire::endTransmission( );
-//   TwoWire::beginTransmission( (int)_i2caddr );
-//   TwoWire::write( GPPUA ); // enable pullups on all inputs
-//   TwoWire::write( 0xff );
-//   TwoWire::write( 0xff );
-//   TwoWire::endTransmission( );
-//   TwoWire::beginTransmission( (int)_i2caddr );
-//   TwoWire::write( IODIRA ); // setup port direction - all inputs to start
-//   TwoWire::write( lowByte( iodirec ) );
-//   TwoWire::write( highByte( iodirec ) );
-//   TwoWire::endTransmission( );
-//   TwoWire::beginTransmission( (int)_i2caddr );
-//   TwoWire::write( GPIOA );  //point register pointer to gpio reg
-//   TwoWire::write( lowByte(iodirec) ); // make o/p latch agree with pulled-up pins
-//   TwoWire::write( highByte(iodirec) );
-//   TwoWire::endTransmission( );
-
-// }
-
-//void LCD_I2C::begin(uint8_t cols, uint8_t rows);//,char *userKeymap ) {
-  
-  //Keypad_begin(char *userKeymap );
-  //LCD_begin(uint8_t cols, uint8_t rows);
-  
-//}
 
 /********** high level commands, for the user! */
 void LCD_I2C::clear()
@@ -217,8 +173,8 @@ void LCD_I2C::home()
 
 void LCD_I2C::setCursor(uint8_t col, uint8_t row)
 {
-  int row_offsets[] = { 0x00, 0x40, 0x10, 0x50 };
-  if ( row > _numrows ) row = _numrows - 1;    // we count rows starting w/0
+  int row_offsets[] = { 0x00, 0x40, 0x14, 0x54 };
+  if ( row > _numrows ) row = _numrows - 1;    // we count rows starting from 0
   command(LCD_SETDDRAMADDR | (col + row_offsets[row]));
 }
 
@@ -320,13 +276,7 @@ void LCD_I2C::setBacklight(uint8_t status) {
 
 // write either command or data, burst it to the expander over I2C.
 void LCD_I2C::send(uint8_t value, uint8_t mode) {
-
-    // BURST SPEED, OH MY GOD
-    // the (now High Speed!) I/O expander pinout
-    //  B7 B6 B5 B4 B3 B2 B1 B0 A7 A6 A5 A4 A3 A2 A1 A0 - MCP23017 
-    //  15 14 13 12 11 10 9  8  7  6  5  4  3  2  1  0  
-    //  RS RW EN D4 D5 D6 D7 B  G  R     B4 B3 B2 B1 B0 
-    
+   
     // n.b. RW bit stays LOW to write
     uint8_t buf = _backlightval >> 8;
     // send high 4 bits
@@ -401,81 +351,3 @@ void LCD_I2C::setRegister(uint8_t reg, uint8_t value) {
     wiresend(value);
     Wire.endTransmission();
 }
-
-// // individual pin setup - modify pin bit in IODIR reg.
-// void LCD_I2C::pin_mode(byte pinNum, byte mode) {
-//   word mask = 0b0000000000000001 << pinNum;
-//   if( mode == OUTPUT ) {
-//     iodir_state &= ~mask;
-//   } else {
-//     iodir_state |= mask;
-//   } // if mode
-//   TwoWire::beginTransmission((int)_i2caddr);
-//   TwoWire::write( IODIRA );
-//   TwoWire::write( lowByte( iodir_state ) );
-//   TwoWire::write( highByte( iodir_state ) );
-//   TwoWire::endTransmission();
-// } // pin_mode( )
-
-// void LCD_I2C::pin_write(byte pinNum, boolean level) {
-//   word mask = 1<<pinNum;
-//   if( level == HIGH ) {
-//     pinState |= mask;
-//   } else {
-//     pinState &= ~mask;
-//   }
-//   port_write( pinState );
-// } // MC17xWrite( )
-
-
-// int LCD_I2C::pin_read(byte pinNum) {
-//   TwoWire::beginTransmission((int)_i2caddr);
-//   TwoWire::write( GPIOA );
-//   TwoWire::endTransmission( );
-//   word mask = 0x1<<pinNum;
-//   TwoWire::requestFrom((int)_i2caddr, 2);
-//   word pinVal = 0;
-//   pinVal = TwoWire::read( );
-//   pinVal |= ( TwoWire::read( )<<8 );
-//   pinVal &= mask;
-//   if( pinVal == mask ) {
-//     return 1;
-//   } else {
-//     return 0;
-//   }
-// }
-
-// void LCD_I2C::port_write( word i2cportval ) {
-// // MCP23017 requires a register address on each write
-//   TwoWire::beginTransmission((int)__i2caddr);
-//   TwoWire::write( GPIOA );
-//   TwoWire::write( lowByte( i2cportval ) );
-//   TwoWire::write( highByte( i2cportval ) );
-//   TwoWire::endTransmission();
-//   pinState = i2cportval;
-// } // port_write( )
-
-// word LCD_I2C::pinState_set( ) {
-//   TwoWire::beginTransmission((int)_i2caddr);
-//   TwoWire::write( GPIOA );
-//   TwoWire::endTransmission( );
-//   TwoWire::requestFrom( (int)__i2caddr, 2 );
-//   pinState = 0;
-//   pinState = TwoWire::read( );
-//   pinState |= (TwoWire::read( )<<8);
-//   return pinState;
-// } // set_pinState( )
-
-// // access functions for IODIR state copy
-// word LCD_I2C::iodir_read( ) {
-//   return iodir_state;  // local copy is always same as chip's register
-// } // iodir_read( )
-
-// void LCD_I2C::iodir_write( word iodir ) {
-//   iodir_state = iodir;
-//   TwoWire::beginTransmission((int)_i2caddr);   // read current IODIR reg 
-//   TwoWire::write( IODIRA );
-//   TwoWire::write( lowByte( iodir_state ) );
-//   TwoWire::write( highByte( iodir_state ) );
-//   TwoWire::endTransmission();
-// } // iodir_write( )
