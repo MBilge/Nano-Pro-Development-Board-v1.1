@@ -43,6 +43,7 @@
 #define M17_BIT_EN 0x2000  // pin 13
 #define M17_BIT_RW 0x4000  // pin 14
 #define M17_BIT_RS 0x8000  // pin 15
+#define M17_BIT_BL 0x100   // pin 8 
 
 static inline void wiresend(uint8_t x) {
 #if ARDUINO >= 100
@@ -141,7 +142,7 @@ void LCD_I2C::begin(uint8_t cols, uint8_t rows){
   delay(5); // done!
 
   // turn on the LCD with our defaults. since these libs seem to use personal preference, I like a cursor.
-  _displaycontrol = (LCD_DISPLAYON|LCD_BACKLIGHT);
+  _displaycontrol = (LCD_DISPLAYON|M17_BIT_BL);
   display();
   // clear it off
   clear();
@@ -261,7 +262,7 @@ inline void LCD_I2C::write(uint8_t value) {
 
 // Allows to set the backlight, if the LCD backpack is used
 void LCD_I2C::setBacklight(uint8_t status) {
-  if (status == HIGH) _backlightval = LCD_BACKLIGHT;
+  if (status == HIGH) _backlightval = M17_BIT_BL;
   else _backlightval = LCD_NOBACKLIGHT;
   // we can't use burstBits16 it will damage bank A as well
   burstBits8b(_backlightval >> 8);  // this is neccessary because of modifying only bank B
