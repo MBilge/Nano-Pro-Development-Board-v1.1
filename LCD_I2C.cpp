@@ -95,16 +95,6 @@ void LCD_I2C::begin(uint8_t cols, uint8_t rows){
 
   Wire.begin();
 
-  // Wire.beginTransmission(MCP23017_ADDRESS | _i2cAddr);
-  // wiresend(IODIRA);
-  // wiresend(0x1F); 
-  // Wire.endTransmission();
-
-  // Wire.beginTransmission(MCP23017_ADDRESS | _i2cAddr);
-  // wiresend(GPPUA);
-  // wiresend(0x1F); 
-  // Wire.endTransmission();
-
   Wire.beginTransmission(MCP23017_ADDRESS | _i2cAddr);
   wiresend(IODIRB);
   wiresend(0x00); 
@@ -121,15 +111,25 @@ void LCD_I2C::begin(uint8_t cols, uint8_t rows){
     _displayfunction |= LCD_5x10DOTS;
   }
 
-  //put the LCD into 4 bit mode
+  // put the LCD into 4 bit mode
   // start with a non-standard command to make it realize we're speaking 4-bit here
   // per LCD datasheet, first command is a single 4-bit burst, 0011.
   //-----
   //  we cannot assume that the LCD panel is powered at the same time as
   //  the arduino, so we have to perform a software reset as per page 45
   //  of the HD44780 datasheet - (kch)
-  //-----
-    //
+
+    //  Pinout for LCD interfacing with MCP23017
+    //  LCD    MCP23017
+    //  BL  ->   8 (PB0) (backlight)
+    //  D4  ->   9 (PB1)
+    //  D5  ->   10(PB2)
+    //  D6  ->   11(PB3)
+    //  D7  ->   12(PB4)
+    //  E   ->   13(PB5)
+    //  RS  ->   15(PB7)
+    //  RW  ->   GND
+    //  
     //  B7 B6 B5 B4 B3 B2 B1 B0 A7 A6 A5 A4 A3 A2 A1 A0 - MCP23017 
     //  15 14 13 12 11 10 9  8  7  6  5  4  3  2  1  0  
     //  RS RW EN D4 D5 D6 D7 B  G  R     B4 B3 B2 B1 B0 
