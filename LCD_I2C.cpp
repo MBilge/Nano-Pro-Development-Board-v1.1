@@ -21,12 +21,18 @@
 #include "WProgram.h"
 #endif
 
-
-//MCP23017 LCD Shield
+//  Pinout for LCD interfacing with MCP23017
+//  LCD ->  MCP23017
+//  BL  ->   8 (PB0) (backlight)
+//  D4  ->   9 (PB1)
+//  D5  ->   10(PB2)
+//  D6  ->   11(PB3)
+//  D7  ->   12(PB4)
+//  E   ->   13(PB5)
+//  RS  ->   15(PB7)
+//  RW  ->   GND
 //
-//  B7 B6 B5 B4 B3 B2 B1 B0 A7 A6 A5 A4 A3 A2 A1 A0 - MCP23017 
-//  RS RW EN D4 D5 D6 D7 BL C4 C3 C2 C1 R4 R3 R2 R1 
-//  15 14 13 12 11 10 9  8  7  6  5  4  3  2  1  0  
+
 // Data pins on MCP23017
 #define M17_BIT_D4 0x0200  // pin 9
 #define M17_BIT_D5 0x0400  // pin 10
@@ -119,20 +125,7 @@ void LCD_I2C::begin(uint8_t cols, uint8_t rows){
   //  the arduino, so we have to perform a software reset as per page 45
   //  of the HD44780 datasheet - (kch)
 
-    //  Pinout for LCD interfacing with MCP23017
-    //  LCD    MCP23017
-    //  BL  ->   8 (PB0) (backlight)
-    //  D4  ->   9 (PB1)
-    //  D5  ->   10(PB2)
-    //  D6  ->   11(PB3)
-    //  D7  ->   12(PB4)
-    //  E   ->   13(PB5)
-    //  RS  ->   15(PB7)
-    //  RW  ->   GND
-    //  
-    //  B7 B6 B5 B4 B3 B2 B1 B0 A7 A6 A5 A4 A3 A2 A1 A0 - MCP23017 
-    //  15 14 13 12 11 10 9  8  7  6  5  4  3  2  1  0  
-    //  RS RW EN D4 D5 D6 D7 B  G  R     B4 B3 B2 B1 B0 
+
   for (uint8_t i=0;i < 3;i++) {
     burstBits8b((M17_BIT_EN|M17_BIT_D5|M17_BIT_D4) >> 8);
     burstBits8b((M17_BIT_D5|M17_BIT_D4) >> 8);
